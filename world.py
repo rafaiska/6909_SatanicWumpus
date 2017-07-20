@@ -115,7 +115,8 @@ class World(object):
         return True
 
     def randommove(self):
-        self.movehero(random.choice(['n', 's', 'e', 'w']))
+        while not self.movehero(random.choice(['n', 's', 'e', 'w'])):
+            pass
 
     def setup(self, npits):
         self.generaterooms()
