@@ -1,4 +1,4 @@
-import kanren
+import subprocess
 
 
 class KnowledgeBaseUpdater(object):
@@ -6,3 +6,4 @@ class KnowledgeBaseUpdater(object):
         self.base_path = base_path
 
     def discovered(self, rule):
+        pass

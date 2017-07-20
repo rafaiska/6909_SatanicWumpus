@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../6906_CGBasic/.idea/6906_CGBasic.iml" filepath="$PROJECT_DIR$/../6906_CGBasic/.idea/6906_CGBasic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/6909_SatanicWumpus.iml" filepath="$PROJECT_DIR$/.idea/6909_SatanicWumpus.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../IKRPGCS/.idea/IKRPGCS.iml" filepath="$PROJECT_DIR$/../IKRPGCS/.idea/IKRPGCS.iml" />
+    </modules>
+  </component>
+</project>
