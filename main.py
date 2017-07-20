@@ -45,7 +45,7 @@ class SimThread(threading.Thread):
         self.worldmap.setup(NPITS)
         self.updateview()
         mixer.music.load('sounds/music.mp3')
-        mixer.music.play()
+        mixer.music.play(-1)
         while not self.end:
             self.running.wait()
             self.view.changeinfolabel('Explorando...')
