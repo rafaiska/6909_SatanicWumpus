@@ -22,7 +22,7 @@ class SimThread(threading.Thread):
 
     def controlsim(self):
         if self.end:
-            exit(0)
+            sys.exit(1)
         if self.running.is_set():
             self.view.changebuttontext('Continuar')
             self.running.clear()
