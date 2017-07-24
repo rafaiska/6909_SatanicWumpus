@@ -15,7 +15,7 @@ class View(object):
         self.rooms = {}
         for i in xrange(height):
             for j in xrange(width):
-                newimage = Tkinter.PhotoImage(file='sprites/room.png')
+                newimage = ImageTk.PhotoImage(file='sprites/room.png')
                 newroom = Tkinter.Label(master=self.worldmap, image=newimage)
                 newroom.photo = newimage
                 newroom.grid(row=i, column=j)
