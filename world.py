@@ -27,6 +27,10 @@ class World(object):
                 return pos
         return None
 
+    def getcurrentroom(self):
+        pos = self.findhero()
+        return self.rooms[pos]
+
     def generaterooms(self):
         for i in xrange(self.height):
             for j in xrange(self.width):
@@ -91,9 +95,9 @@ class World(object):
     def movehero(self, direction):
         i, j = self.findhero()
         prevroom = self.rooms[i, j]
-        if direction == 'n':
+        if direction == 's':
             i += 1
-        elif direction == 's':
+        elif direction == 'n':
             i -= 1
         elif direction == 'e':
             j -= 1

@@ -4,6 +4,7 @@ from pygame import mixer
 import Tkinter
 import threading
 
+import plia.aiplayer as aip
 import view
 import world
 
@@ -11,6 +12,8 @@ BOARDWIDTH = 6
 BOARDHEIGHT = 4
 TIMEBETWEENSTEPS = 1
 NPITS = 2
+BASEPATH = 'plia/base.pl'
+PREDPATH = 'plia/predicados.pl'
 
 class SimThread(threading.Thread):
     def __init__(self, view, worldmap):
@@ -19,6 +22,7 @@ class SimThread(threading.Thread):
         self.end = False
         self.view = view
         self.worldmap = worldmap
+        self.ia = aip.AIPlayer((BOARDWIDTH, BOARDHEIGHT))
 
     def controlsim(self):
         if self.end:
@@ -31,7 +35,9 @@ class SimThread(threading.Thread):
             self.running.set()
 
     def makeiamove(self):
-        self.worldmap.randommove()
+        self.ia.update(self.worldmap.getcurrentroom())
+        self.worldmap.movehero(self.ia.nextstep())
+        # self.worldmap.randommove()
 
     def updateview(self):
         for room in self.worldmap.rooms.values():
