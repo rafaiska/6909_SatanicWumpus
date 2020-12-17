@@ -1,1 +1,1 @@
-from aiplayer import AIPlayer
+from .aiplayer import AIPlayer

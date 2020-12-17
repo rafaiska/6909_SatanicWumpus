@@ -1,10 +1,11 @@
-import Queue
+from queue import Queue
+
 
 class AIPlayer(object):
     def __init__(self, worldsize):
         self.hero_pos = None
         self.worldsize = worldsize
-        self.path = Queue.Queue()
+        self.path = Queue()
         self.hero_perception = {}
 
     def has_pit(self, room):
@@ -25,7 +26,6 @@ class AIPlayer(object):
             return 'm'
         else:
             return 'n'
-
 
     def has_wumpus(self, room):
         adjacencies = self.get_adj(room)
@@ -64,14 +64,13 @@ class AIPlayer(object):
                     retv.append(adj)
         return retv
 
-
     def discovered(self, room):
         self.hero_pos = (room.posx, room.posy)
         if self.hero_pos not in self.hero_perception.keys():
             self.hero_perception[self.hero_pos] = []
-            if room.hasbreeze():
+            if room.has_breeze():
                 self.hero_perception[self.hero_pos].append('b')
-            if room.hasstench():
+            if room.has_stench():
                 self.hero_perception[self.hero_pos].append('s')
 
     def calculatenextbestroom(self):
@@ -112,15 +111,14 @@ class AIPlayer(object):
                 return 'n'
         return 'ERROR'
 
-
     def buildpath(self, nextroom):
-        queue = Queue.Queue()
+        queue = Queue()
         queue.put(self.hero_pos)
         distances = {}
         parent = {}
         discovered = {}
-        for i in xrange(self.worldsize[0]):
-            for j in xrange(self.worldsize[1]):
+        for i in range(self.worldsize[0]):
+            for j in range(self.worldsize[1]):
                 distances[i, j] = 9999
                 parent[i, j] = None
                 discovered[i, j] = False
@@ -146,7 +144,7 @@ class AIPlayer(object):
                 break
             moves.append(nextr)
 
-        # print 'HERO POS:', self.hero_pos
+        print('HERO POS:', self.hero_pos)
         # print 'NEXT ROOM:', nextroom
         # print 'DISTANCES:', distances
         # print 'DISCOVERED:', discovered

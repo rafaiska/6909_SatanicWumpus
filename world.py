@@ -1,18 +1,21 @@
-import room
 import random
 
+import room
+
+
 class World(object):
-    def __init__(self, width, height):
+    def __init__(self, width, height, seed=None):
+        self.seed = seed
         self.rooms = {}
         self.width = width
         self.height = height
-        self.herodead = False
-        self.foundgold = False
+        self.is_hero_dead = False
+        self.found_gold = False
 
     def __str__(self):
         retv = ''
-        for i in xrange(self.height):
-            for j in xrange(self.width):
+        for i in range(self.height):
+            for j in range(self.width):
                 if (i, j) in self.rooms.keys():
                     retv += str(self.rooms[i, j].objects)
                 else:
@@ -21,80 +24,104 @@ class World(object):
             retv += '\n'
         return retv
 
-    def findhero(self):
+    def random_location(self):
+        posi = random.choice(range(self.height))
+        posj = random.choice(range(self.width))
+        return posi, posj
+
+    def find_hero(self):
         for pos in self.rooms:
-            if self.rooms[pos].hashero():
+            if self.rooms[pos].has_hero():
                 return pos
         return None
 
-    def getcurrentroom(self):
-        pos = self.findhero()
+    def get_current_room(self):
+        pos = self.find_hero()
         return self.rooms[pos]
 
-    def generaterooms(self):
-        for i in xrange(self.height):
-            for j in xrange(self.width):
+    def generate_rooms(self):
+        for i in range(self.height):
+            for j in range(self.width):
                 self.rooms[i, j] = room.Room(j, i)
 
-    def populaterooms(self, npits):
-        def randomlocation():
-            posi = random.choice(range(self.height))
-            posj = random.choice(range(self.width))
-            return posi, posj
+    def place_breezes_around(self, i, j):
+        if (i + 1, j) in self.rooms.keys():
+            self.rooms[i + 1, j].add_breeze()
+        if (i - 1, j) in self.rooms.keys():
+            self.rooms[i - 1, j].add_breeze()
+        if (i, j + 1) in self.rooms.keys():
+            self.rooms[i, j + 1].add_breeze()
+        if (i, j - 1) in self.rooms.keys():
+            self.rooms[i, j - 1].add_breeze()
 
-        pitstoplace = npits
+    def place_stenches_around(self, i, j):
+        if (i + 1, j) in self.rooms.keys():
+            self.rooms[i + 1, j].add_stench()
+        if (i - 1, j) in self.rooms.keys():
+            self.rooms[i - 1, j].add_stench()
+        if (i, j + 1) in self.rooms.keys():
+            self.rooms[i, j + 1].add_stench()
+        if (i, j - 1) in self.rooms.keys():
+            self.rooms[i, j - 1].add_stench()
+
+    def place_pits(self, npits):
+        pits_to_place = npits
+        while pits_to_place:
+            i, j = self.random_location()
+            room_to_place = self.rooms[i, j]
+            if room_to_place.can_place_entity():
+                self.rooms[i, j].add_pit()
+                pits_to_place -= 1
+                self.place_breezes_around(i, j)
+
+    def place_wumpus(self):
         wumpusplaced = False
-        goldplaced = False
-        heroplaced = False
-
-        # place pits and breezes
-        while pitstoplace:
-            i, j = randomlocation()
-            if not self.rooms[i, j].haspit():
-                self.rooms[i, j].addpit()
-                pitstoplace -= 1
-                if (i + 1, j) in self.rooms.keys():
-                    self.rooms[i + 1, j].addbreeze()
-                if (i - 1, j) in self.rooms.keys():
-                    self.rooms[i - 1, j].addbreeze()
-                if (i, j + 1) in self.rooms.keys():
-                    self.rooms[i, j + 1].addbreeze()
-                if (i, j - 1) in self.rooms.keys():
-                    self.rooms[i, j - 1].addbreeze()
-
-        # place wumpus and stenches
         while not wumpusplaced:
-            i, j = randomlocation()
-            if not self.rooms[i, j].haspit():
-                self.rooms[i, j].addwumpus()
+            i, j = self.random_location()
+            room_to_place = self.rooms[i, j]
+            if room_to_place.can_place_entity():
+                room_to_place.add_wumpus()
                 wumpusplaced = True
-                if (i + 1, j) in self.rooms.keys():
-                    self.rooms[i + 1, j].addstench()
-                if (i - 1, j) in self.rooms.keys():
-                    self.rooms[i - 1, j].addstench()
-                if (i, j + 1) in self.rooms.keys():
-                    self.rooms[i, j + 1].addstench()
-                if (i, j - 1) in self.rooms.keys():
-                    self.rooms[i, j - 1].addstench()
+                self.place_stenches_around(i, j)
 
-        #place gold
-        while not goldplaced:
-            i, j = randomlocation()
-            if not self.rooms[i, j].haspit() and not self.rooms[i, j].haswumpus():
-                self.rooms[i, j].addgold()
-                goldplaced = True
+    def place_gold(self):
+        gold_placed = False
+        while not gold_placed:
+            i, j = self.random_location()
+            room_to_place = self.rooms[i, j]
+            if room_to_place.can_place_entity():
+                room_to_place.add_gold()
+                gold_placed = True
 
-        #place player
-        while not heroplaced:
-            i, j = randomlocation()
-            if not self.rooms[i, j].haspit() and not self.rooms[i, j].hasgold() and not self.rooms[i, j].haswumpus():
-                self.rooms[i, j].addhero()
-                self.rooms[i, j].explore()
-                heroplaced = True
+    def place_hero(self):
+        hero_placed = False
+        while not hero_placed:
+            i, j = self.random_location()
+            room_to_place = self.rooms[i, j]
+            if room_to_place.can_place_entity() and room_to_place.no_hazards_around():
+                room_to_place.add_hero()
+                room_to_place.explore()
+                hero_placed = True
 
-    def movehero(self, direction):
-        i, j = self.findhero()
-        prevroom = self.rooms[i, j]
+    def populate_rooms(self, npits):
+        if self.seed is not None:
+            random.seed(self.seed)
+        self.place_pits(npits)
+        self.place_wumpus()
+        self.place_gold()
+        self.place_hero()
+
+    def explore_room(self, current_room):
+        current_room.explore()
+        if current_room.has_wumpus() or current_room.has_pit():
+            self.is_hero_dead = True
+        elif current_room.has_gold():
+            current_room.add_hero()
+            self.found_gold = True
+
+    def move_hero(self, direction):
+        i, j = self.find_hero()
+        prev_room = self.rooms[i, j]
         if direction == 's':
             i += 1
         elif direction == 'n':
@@ -104,29 +131,33 @@ class World(object):
         elif direction == 'w':
             j += 1
         try:
-            room = self.rooms[i, j]
+            current_room = self.rooms[i, j]
         except KeyError:
             return False
-        prevroom.movehero()
-        room.explore()
-        if room.haswumpus() or room.haspit():
-            self.herodead = True
-        elif room.hasgold():
-            room.addhero()
-            self.foundgold = True
-        else:
-            room.addhero()
+        prev_room.remove_hero()
+        self.explore_room(current_room)
+        current_room.add_hero()
         return True
 
-    def randommove(self):
-        while not self.movehero(random.choice(['n', 's', 'e', 'w'])):
+    def random_move(self):
+        while not self.move_hero(random.choice(['n', 's', 'e', 'w'])):
             pass
 
     def setup(self, npits):
-        self.generaterooms()
-        self.populaterooms(npits)
+        self.generate_rooms()
+        self.populate_rooms(npits)
 
-    def revealall(self):
-        for i in xrange(self.height):
-            for j in xrange(self.width):
+    def reveal_all(self):
+        for i in range(self.height):
+            for j in range(self.width):
                 self.rooms[i, j].explore()
+
+    def fire_arrow(self, arrow_direction):
+        step = 1 if arrow_direction in ['s', 'w'] else -1
+        hero_pos = self.find_hero()
+        if arrow_direction in ['n', 's']:
+            for j in range(hero_pos[1] + step, self.height, step):
+                self.rooms[hero_pos[0], j].kill_wumpus()
+        else:
+            for i in range(hero_pos[0] + step, self.width, step):
+                self.rooms[i, hero_pos[1]].kill_wumpus()

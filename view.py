@@ -1,22 +1,22 @@
-import Tkinter
+from tkinter import Frame, StringVar, Label, Button
 from PIL import Image, ImageTk
 
 
 class View(object):
     def __init__(self, root, width, height):
         root.title('Wumpus World')
-        self.worldmap = Tkinter.Frame(master=root)
+        self.worldmap = Frame(master=root)
         self.worldmap.pack()
-        self.siminfo = Tkinter.StringVar()
-        self.simpanel = Tkinter.Label(master=root, textvariable=self.siminfo)
+        self.siminfo = StringVar()
+        self.simpanel = Label(master=root, textvariable=self.siminfo)
         self.simpanel.pack()
         self.siminfo.set('Bem vindo ao mundo de Wumpus!')
 
         self.rooms = {}
-        for i in xrange(height):
-            for j in xrange(width):
+        for i in range(height):
+            for j in range(width):
                 newimage = ImageTk.PhotoImage(file='sprites/room.png')
-                newroom = Tkinter.Label(master=self.worldmap, image=newimage)
+                newroom = Label(master=self.worldmap, image=newimage)
                 newroom.photo = newimage
                 newroom.grid(row=i, column=j)
                 self.rooms[i, j] = newroom
@@ -28,7 +28,7 @@ class View(object):
         self.siminfo.set(newtext)
 
     def createcontrolbutton(self, root, callfunction):
-        self.simcontrol = Tkinter.Button(master=root, text='Iniciar IA', command=callfunction)
+        self.simcontrol = Button(master=root, text='Iniciar IA', command=callfunction)
         self.simcontrol.pack()
 
     def addwumpus(self, image):
