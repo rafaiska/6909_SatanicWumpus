@@ -35,6 +35,10 @@ class Room(object):
         if 's' not in self.objects:
             self.objects.append('s')
 
+    def remove_stench(self):
+        if 's' in self.objects:
+            self.objects.remove('s')
+
     def add_hero(self):
         if 'h' not in self.objects:
             self.objects.append('h')

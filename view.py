@@ -5,6 +5,7 @@ from PIL import Image, ImageTk
 class View(object):
     def __init__(self, root, width, height):
         root.title('Wumpus World')
+        self.root = root
         self.worldmap = Frame(master=root)
         self.worldmap.pack()
         self.siminfo = StringVar()
@@ -21,11 +22,15 @@ class View(object):
                 newroom.grid(row=i, column=j)
                 self.rooms[i, j] = newroom
 
+    def destroy(self):
+        self.root.destroy()
+
     def changebuttontext(self, newtext):
         self.simcontrol.configure(text=newtext)
 
     def changeinfolabel(self, newtext):
-        self.siminfo.set(newtext)
+        if newtext != self.siminfo.get():
+            self.siminfo.set(newtext)
 
     def createcontrolbutton(self, root, callfunction):
         self.simcontrol = Button(master=root, text='Iniciar IA', command=callfunction)

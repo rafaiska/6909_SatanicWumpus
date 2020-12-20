@@ -3,14 +3,26 @@ import random
 import room
 
 
+class Action(object):
+    def __init__(self, action_type, direction):
+        if action_type not in ['a', 'm']:
+            raise ValueError
+        self.type = action_type
+        if direction not in ['n', 's', 'e', 'w']:
+            raise ValueError
+        self.direction = direction
+
+
 class World(object):
-    def __init__(self, width, height, seed=None):
+    def __init__(self, width, height, seed=None, arrows=1):
         self.seed = seed
         self.rooms = {}
         self.width = width
         self.height = height
         self.is_hero_dead = False
         self.found_gold = False
+        self.is_wumpus_dead = False
+        self.arrows = arrows
 
     def __str__(self):
         retv = ''
@@ -39,30 +51,38 @@ class World(object):
         pos = self.find_hero()
         return self.rooms[pos]
 
+    def get_adjacent_rooms(self, center_room):
+        rooms = []
+        j, i = center_room.posx, center_room.posy
+        if (i + 1, j) in self.rooms.keys():
+            rooms.append(self.rooms[i + 1, j])
+        if (i - 1, j) in self.rooms.keys():
+            rooms.append(self.rooms[i - 1, j])
+        if (i, j + 1) in self.rooms.keys():
+            rooms.append(self.rooms[i, j + 1])
+        if (i, j - 1) in self.rooms.keys():
+            rooms.append(self.rooms[i, j - 1])
+        return rooms
+
     def generate_rooms(self):
         for i in range(self.height):
             for j in range(self.width):
                 self.rooms[i, j] = room.Room(j, i)
 
     def place_breezes_around(self, i, j):
-        if (i + 1, j) in self.rooms.keys():
-            self.rooms[i + 1, j].add_breeze()
-        if (i - 1, j) in self.rooms.keys():
-            self.rooms[i - 1, j].add_breeze()
-        if (i, j + 1) in self.rooms.keys():
-            self.rooms[i, j + 1].add_breeze()
-        if (i, j - 1) in self.rooms.keys():
-            self.rooms[i, j - 1].add_breeze()
+        adjacent_rooms = self.get_adjacent_rooms(self.rooms[i, j])
+        for a_room in adjacent_rooms:
+            a_room.add_breeze()
 
     def place_stenches_around(self, i, j):
-        if (i + 1, j) in self.rooms.keys():
-            self.rooms[i + 1, j].add_stench()
-        if (i - 1, j) in self.rooms.keys():
-            self.rooms[i - 1, j].add_stench()
-        if (i, j + 1) in self.rooms.keys():
-            self.rooms[i, j + 1].add_stench()
-        if (i, j - 1) in self.rooms.keys():
-            self.rooms[i, j - 1].add_stench()
+        adjacent_rooms = self.get_adjacent_rooms(self.rooms[i, j])
+        for a_room in adjacent_rooms:
+            a_room.add_stench()
+
+    def remove_stenches_around(self, i, j):
+        adjacent_rooms = self.get_adjacent_rooms(self.rooms[i, j])
+        for a_room in adjacent_rooms:
+            a_room.remove_stench()
 
     def place_pits(self, npits):
         pits_to_place = npits
@@ -152,12 +172,33 @@ class World(object):
             for j in range(self.width):
                 self.rooms[i, j].explore()
 
+    def arrow_room(self, i, j):
+        if (i, j) not in self.rooms.keys():
+            return False
+        arrowed_room = self.rooms[i, j]
+        if arrowed_room.has_wumpus():
+            arrowed_room.kill_wumpus()
+            self.remove_stenches_around(i, j)
+            self.is_wumpus_dead = True
+            return True
+        return False
+
     def fire_arrow(self, arrow_direction):
+        if self.arrows == 0:
+            return False
+        else:
+            self.arrows -= 1
         step = 1 if arrow_direction in ['s', 'w'] else -1
         hero_pos = self.find_hero()
         if arrow_direction in ['n', 's']:
-            for j in range(hero_pos[1] + step, self.height, step):
-                self.rooms[hero_pos[0], j].kill_wumpus()
+            for i in range(hero_pos[0] + step, self.height if step == 1 else -1, step):
+                if self.arrow_room(i, hero_pos[1]):
+                    return True
         else:
-            for i in range(hero_pos[0] + step, self.width, step):
-                self.rooms[i, hero_pos[1]].kill_wumpus()
+            for j in range(hero_pos[1] + step, self.width if step == 1 else -1, step):
+                if self.arrow_room(hero_pos[0], j):
+                    return True
+        return False
+
+    def get_size(self):
+        return self.width, self.height

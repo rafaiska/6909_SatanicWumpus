@@ -1,10 +1,13 @@
 from queue import Queue
 
+from plia.abs_player import AIPlayerBasic
+from wumpus_world import World, Action
 
-class AIPlayer(object):
-    def __init__(self, worldsize):
+
+class AIPlayer(AIPlayerBasic):
+    def __init__(self):
         self.hero_pos = None
-        self.worldsize = worldsize
+        self.worldsize = None
         self.path = Queue()
         self.hero_perception = {}
 
@@ -154,13 +157,16 @@ class AIPlayer(object):
         for room in moves:
             self.path.put(room)
 
-    def update(self, room):
+    def set_observations(self, world: World):
+        if self.worldsize is None:
+            self.worldsize = world.get_size()
+        room = world.get_current_room()
         self.discovered(room)
 
-    def nextstep(self):
+    def get_action(self):
         if self.path.empty():
             nextroom = self.calculatenextbestroom()
             self.buildpath(nextroom)
         nextroom = self.path.get_nowait()
         nextmove = self.direction(nextroom)
-        return nextmove
+        return Action('m', nextmove)
